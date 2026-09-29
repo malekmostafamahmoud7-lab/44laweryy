@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة المساعد الرقمي للمحامي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo-container" onclick="showTab('home')">
+            <div class="logo-img">
+                <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <span class="logo-text">المساعد الرقمي للمحامي</span>
+        </div>
+        <div class="nav-tabs">
+            <button class="nav-btn active" data-tab="home" onclick="showTab('home')">🏠 الرئيسية</button>
+            <button class="nav-btn" data-tab="clients" onclick="showTab('clients')">👥 الموكلين</button>
+            <button class="nav-btn" data-tab="expenses" onclick="showTab('expenses')">💰 العهد والمصروفات</button>
+            <button class="nav-btn" data-tab="sessions" onclick="showTab('sessions')">📅 الجلسات</button>
+            <button class="nav-btn" data-tab="cases" onclick="showTab('cases')">📁 القضايا</button>
+            <button class="nav-btn" data-tab="links" onclick="showTab('links')">🔗 المنصات</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+
+        <!-- الصفحة الرئيسية -->
+        <div id="tab-home" class="section-panel active-panel">
+            <div class="hero-section">
+                <div class="hero-logo-box">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+                <h1 class="hero-title">منصة المساعد الرقمي للمحامي</h1>
+                <p class="hero-subtitle">
+                    المنظومة الذكية الشاملة لإدارة أعمال المكتب القانوني، تنظيم الموكلين، متابعة الجلسات والقضايا، وإدارة العهد والمصروفات بدقة واحترافية.
+                </p>
+            </div>
+
+            <h3 style="color: var(--accent-gold); margin-bottom: 15px; text-align: center;">اختر القسم للبدء:</h3>
+
+            <div class="home-cards-grid">
+                <div class="feature-card" onclick="showTab('clients')">
+                    <i class="fa-solid fa-users"></i>
+                    <h3>دليل الموكلين</h3>
+                    <p>إدارة بيانات التواصل، الأرقام القومية، والعناوين لكل موكل.</p>
+                </div>
+
+                <div class="feature-card" onclick="showTab('expenses')">
+                    <i class="fa-solid fa-wallet"></i>
+                    <h3>العهد والمصروفات</h3>
+                    <p>حساب المصاريف الإدارية، العهدة المتبقية، وتفاصيل الإنفاق.</p>
+                </div>
+
+                <div class="feature-card" onclick="showTab('sessions')">
+                    <i class="fa-solid fa-gavel"></i>
+                    <h3>أجندة الجلسات</h3>
+                    <p>متابعة مواعيد القضايا والجلسات والملاحظات الهامة.</p>
+                </div>
+
+                <div class="feature-card" onclick="showTab('cases')">
+                    <i class="fa-solid fa-folder-plus"></i>
+                    <h3>تسجيل القضايا</h3>
+                    <p>أرشفة القضايا ورقم كل ملف والدائرة والمحكمة المختصة.</p>
+                </div>
+
+                <div class="feature-card" onclick="showTab('links')">
+                    <i class="fa-solid fa-globe"></i>
+                    <h3>الخدمات الرقمية</h3>
+                    <p>وصول سريع لمنصة مصر الرقمية، النيابة العامة، والذكاء الاصطناعي.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- أداة الموكلين -->
+        <div id="tab-clients" class="section-panel">
+            <h2 class="section-title"><i class="fa-solid fa-users"></i> دليل الموكلين وبيانات التواصل</h2>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>اسم الموكل:</label>
+                    <input type="text" id="cliName" placeholder="الاسم بالكامل">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف:</label>
+                    <input type="text" id="cliPhone" placeholder="01xxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>الرقم القومي:</label>
+                    <input type="text" id="cliNationalId" placeholder="14 رقم">
+                </div>
+                <div class="form-group">
+                    <label>العنوان:</label>
+                    <input type="text" id="cliAddress" placeholder="المحافظة / المنطقة">
+                </div>
+                <div class="form-group">
+                    <label>ملاحظات / القضايا:</label>
+                    <input type="text" id="cliNotes" placeholder="أرث، مدني، شركات...">
+                </div>
+                <button class="btn-gold" onclick="addClient()">حفظ الموكل</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>اسم الموكل</th>
+                        <th>رقم الهاتف</th>
+                        <th>الرقم القومي</th>
+                        <th>العنوان</th>
+                        <th>ملاحظات</th>
+                        <th>إجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="clientsTable"></tbody>
+            </table>
+        </div>
+
+        <!-- أداة العهدة والمصروفات -->
+        <div id="tab-expenses" class="section-panel">
+            <h2 class="section-title"><i class="fa-solid fa-wallet"></i> إدارة العهدة والمصروفات</h2>
+            
+            <div class="summary-box">
+                <div class="summary-item">المصروفات: <span id="spentVal">0</span> ج.م</div>
+                <div class="summary-item">المتبقي: <span id="remainVal">0</span> ج.م</div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>العهدة الكلية:</label>
+                    <input type="number" id="budgetInput" placeholder="المبلغ" oninput="updateBudget()">
+                </div>
+                <div class="form-group">
+                    <label>بيان المصروف:</label>
+                    <input type="text" id="expReason" placeholder="مثال: رسوم إعلان">
+                </div>
+                <div class="form-group">
+                    <label>المبلغ:</label>
+                    <input type="number" id="expAmount" placeholder="0">
+                </div>
+                <button class="btn-gold" onclick="addExpense()">إضافة</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr><th>بيان المصروف</th><th>المبلغ</th><th>إجراء</th></tr>
+                </thead>
+                <tbody id="expensesTable"></tbody>
+            </table>
+        </div>
+
+        <!-- أداة الجلسات -->
+        <div id="tab-sessions" class="section-panel">
+            <h2 class="section-title"><i class="fa-solid fa-gavel"></i> أجندة الجلسات والمذكرات</h2>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>القضية:</label>
+                    <input type="text" id="sesCase" placeholder="رقم أو اسم القضية">
+                </div>
+                <div class="form-group">
+                    <label>التاريخ:</label>
+                    <input type="date" id="sesDate">
+                </div>
+                <div class="form-group">
+                    <label>الملاحظات:</label>
+                    <input type="text" id="sesNote" placeholder="تفاصيل الجلسة">
+                </div>
+                <button class="btn-gold" onclick="addSession()">حفظ الجلسة</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr><th>القضية</th><th>التاريخ</th><th>الملاحظات</th><th>إجراء</th></tr>
+                </thead>
+                <tbody id="sessionsTable"></tbody>
+            </table>
+        </div>
+
+        <!-- أداة القضايا -->
+        <div id="tab-cases" class="section-panel">
+            <h2 class="section-title"><i class="fa-solid fa-folder-plus"></i> تسجيل القضايا والملفات</h2>
+
+            <div class="form-grid">
+                <div class="form-group"><label>رقم القضية:</label><input type="text" id="cNo"></div>
+                <div class="form-group"><label>اسم الموكل:</label><input type="text" id="cClient"></div>
+                <div class="form-group"><label>اسم الخصم:</label><input type="text" id="cOpp"></div>
+                <div class="form-group"><label>المحكمة:</label><input type="text" id="cCourt"></div>
+            </div>
+            <button class="btn-gold" onclick="addCase()" style="margin-bottom: 15px;">حفظ القضية</button>
+
+            <table>
+                <thead>
+                    <tr><th>رقم القضية</th><th>الموكل</th><th>الخصم</th><th>المحكمة</th></tr>
+                </thead>
+                <tbody id="casesTable"></tbody>
+            </table>
+        </div>
+
+        <!-- دليل المنصات -->
+        <div id="tab-links" class="section-panel">
+            <h2 class="section-title"><i class="fa-solid fa-globe"></i> دليل المنصات والخدمات المباشرة</h2>
+
+            <div class="links-grid">
+                <a href="https://digital.gov.eg/" target="_blank" class="link-card">
+                    <h4>🏛️ مصر الرقمية</h4>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">لإجراء التوكيلات والخدمات الحكومية.</p>
+                </a>
+                <a href="https://ppo.gov.eg/" target="_blank" class="link-card">
+                    <h4>⚖️ النيابة العامة المصرية</h4>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">متابعة العرائض والقضايا والمخالفات.</p>
+                </a>
+                <a href="https://gemini.google.com/" target="_blank" class="link-card">
+                    <h4>🤖 الذكاء الاصطناعي (Gemini)</h4>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">البحوث القانونية وصياغة العقود والمذكرات.</p>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        جميع الحقوق محفوظة لـ <strong>مالك مصطفى 2026</strong> &copy;
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
