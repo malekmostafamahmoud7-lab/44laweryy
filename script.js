@@ -1,183 +1,258 @@
-// دالة التبديل بين الأقسام
-function showTab(tabName) {
-    const panels = document.querySelectorAll('.section-panel');
-    panels.forEach(p => p.classList.remove('active-panel'));
+// ==========================================
+// 1. التنقل بين الأقسام (Tabs Navigation)
+// ==========================================
+function showTab(tabId) {
+    // إخفاء كل الأقسام
+    document.querySelectorAll('.section-panel').forEach(panel => {
+        panel.classList.remove('active-panel');
+    });
+    
+    // إلغاء تفعيل كل الأزرار
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
 
-    const buttons = document.querySelectorAll('.nav-btn');
-    buttons.forEach(b => b.classList.remove('active'));
-
-    const targetPanel = document.getElementById('tab-' + tabName);
+    // إظهار القسم المطلوب
+    const targetPanel = document.getElementById(`tab-${tabId}`);
     if (targetPanel) {
         targetPanel.classList.add('active-panel');
     }
 
-    const targetBtn = document.querySelector(`.nav-btn[data-tab="${tabName}"]`);
+    // تفعيل الزرار الخاص بالقسم
+    const targetBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
     if (targetBtn) {
         targetBtn.classList.add('active');
     }
 }
 
-// إضافة موكل جديد
+// ==========================================
+// 2. إدارة الموكلين (Clients)
+// ==========================================
 function addClient() {
-    let name = document.getElementById('cliName').value;
-    let phone = document.getElementById('cliPhone').value;
-    let nid = document.getElementById('cliNationalId').value;
-    let address = document.getElementById('cliAddress').value;
-    let notes = document.getElementById('cliNotes').value;
+    const name = document.getElementById('cliName').value.trim();
+    const phone = document.getElementById('cliPhone').value.trim();
+    const nationalId = document.getElementById('cliNationalId').value.trim();
+    const address = document.getElementById('cliAddress').value.trim();
+    const notes = document.getElementById('cliNotes').value.trim();
 
-    if (!name || !phone) {
-        alert('يرجى إدخال اسم الموكل ورقم الهاتف على الأقل!');
+    if (!name) {
+        alert('برجاء إدخال اسم الموكل على الأقل!');
         return;
     }
 
-    let tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${name}</td>
-        <td>${phone}</td>
-        <td>${nid || '-'}</td>
-        <td>${address || '-'}</td>
-        <td>${notes || '-'}</td>
-        <td><button class="btn-del" onclick="this.parentElement.parentElement.remove()">حذف</button></td>
-    `;
-    document.getElementById('clientsTable').appendChild(tr);
+    const clientData = { id: Date.now(), name, phone, nationalId, address, notes };
+    let clients = JSON.parse(localStorage.getItem('unite_clients')) || [];
+    clients.push(clientData);
+    localStorage.setItem('unite_clients', JSON.stringify(clients));
 
+    // تفريغ الخانات
     document.getElementById('cliName').value = '';
     document.getElementById('cliPhone').value = '';
     document.getElementById('cliNationalId').value = '';
     document.getElementById('cliAddress').value = '';
     document.getElementById('cliNotes').value = '';
+
+    renderClients();
 }
 
-// حسابات المصروفات والعهدة
-let totalSpent = 0;
+function renderClients() {
+    const tbody = document.getElementById('clientsTable');
+    if (!tbody) return;
+    const clients = JSON.parse(localStorage.getItem('unite_clients')) || [];
+    
+    tbody.innerHTML = clients.map((c, index) => `
+        <tr>
+            <td>${c.name}</td>
+            <td>${c.phone || '-'}</td>
+            <td>${c.nationalId || '-'}</td>
+            <td>${c.address || '-'}</td>
+            <td>${c.notes || '-'}</td>
+            <td>
+                <button style="background:#e74c3c; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;" onclick="deleteClient(${index})">
+                    <i class="fa-solid fa-trash"></i> حذف
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function deleteClient(index) {
+    let clients = JSON.parse(localStorage.getItem('unite_clients')) || [];
+    clients.splice(index, 1);
+    localStorage.setItem('unite_clients', JSON.stringify(clients));
+    renderClients();
+}
+
+// ==========================================
+// 3. إدارة العهد والمصروفات (Expenses)
+// ==========================================
+function updateBudget() {
+    const totalBudget = parseFloat(document.getElementById('budgetInput').value) || 0;
+    localStorage.setItem('unite_budget', totalBudget);
+    calculateExpensesSummary();
+}
 
 function addExpense() {
-    let reason = document.getElementById('expReason').value;
-    let amount = parseFloat(document.getElementById('expAmount').value);
+    const reason = document.getElementById('expReason').value.trim();
+    const amount = parseFloat(document.getElementById('expAmount').value) || 0;
 
-    if (!reason || isNaN(amount)) {
-        alert('اكتب بيان المصروف والمبلغ بشكل صحيح!');
+    if (!reason || amount <= 0) {
+        alert('برجاء إدخال بيان المصروف ومبلغ صحيح!');
         return;
     }
 
-    let tr = document.createElement('tr');
-    tr.innerHTML = `<td>${reason}</td><td>${amount} ج.م</td><td><button class="btn-del" onclick="removeExp(this, ${amount})">حذف</button></td>`;
-    document.getElementById('expensesTable').appendChild(tr);
+    const expData = { id: Date.now(), reason, amount };
+    let expenses = JSON.parse(localStorage.getItem('unite_expenses')) || [];
+    expenses.push(expData);
+    localStorage.setItem('unite_expenses', JSON.stringify(expenses));
 
-    totalSpent += amount;
     document.getElementById('expReason').value = '';
     document.getElementById('expAmount').value = '';
-    updateBudget();
+
+    renderExpenses();
 }
 
-function removeExp(btn, amount) {
-    btn.parentElement.parentElement.remove();
-    totalSpent -= amount;
-    updateBudget();
+function renderExpenses() {
+    const tbody = document.getElementById('expensesTable');
+    if (!tbody) return;
+    const expenses = JSON.parse(localStorage.getItem('unite_expenses')) || [];
+
+    tbody.innerHTML = expenses.map((e, index) => `
+        <tr>
+            <td>${e.reason}</td>
+            <td>${e.amount} ج.م</td>
+            <td>
+                <button style="background:#e74c3c; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;" onclick="deleteExpense(${index})">
+                    <i class="fa-solid fa-trash"></i> حذف
+                </button>
+            </td>
+        </tr>
+    `).join('');
+
+    calculateExpensesSummary();
 }
 
-function updateBudget() {
-    let budget = parseFloat(document.getElementById('budgetInput').value) || 0;
-    document.getElementById('spentVal').innerText = totalSpent;
-    document.getElementById('remainVal').innerText = budget - totalSpent;
+function deleteExpense(index) {
+    let expenses = JSON.parse(localStorage.getItem('unite_expenses')) || [];
+    expenses.splice(index, 1);
+    localStorage.setItem('unite_expenses', JSON.stringify(expenses));
+    renderExpenses();
 }
 
-// إضافة جلسة
+function calculateExpensesSummary() {
+    const expenses = JSON.parse(localStorage.getItem('unite_expenses')) || [];
+    const totalSpent = expenses.reduce((sum, item) => sum + item.amount, 0);
+    const totalBudget = parseFloat(localStorage.getItem('unite_budget')) || 0;
+    const remaining = totalBudget - totalSpent;
+
+    const spentElem = document.getElementById('spentVal');
+    const remainElem = document.getElementById('remainVal');
+    const budgetInput = document.getElementById('budgetInput');
+
+    if (spentElem) spentElem.innerText = totalSpent;
+    if (remainElem) remainElem.innerText = remaining;
+    if (budgetInput && !budgetInput.value) budgetInput.value = totalBudget || '';
+}
+
+// ==========================================
+// 4. إدارة الجلسات (Sessions)
+// ==========================================
 function addSession() {
-    let cName = document.getElementById('sesCase').value;
-    let cDate = document.getElementById('sesDate').value;
-    let cNote = document.getElementById('sesNote').value;
+    const caseName = document.getElementById('sesCase').value.trim();
+    const date = document.getElementById('sesDate').value;
+    const note = document.getElementById('sesNote').value.trim();
 
-    if (!cName || !cDate) {
-        alert('أدخل القضية والتاريخ!');
+    if (!caseName || !date) {
+        alert('برجاء إدخال القضية وتاريخ الجلسة!');
         return;
     }
 
-    let tr = document.createElement('tr');
-    tr.innerHTML = `<td>${cName}</td><td>${cDate}</td><td>${cNote || '-'}</td><td><button class="btn-del" onclick="this.parentElement.parentElement.remove()">حذف</button></td>`;
-    document.getElementById('sessionsTable').appendChild(tr);
+    const sessionData = { id: Date.now(), caseName, date, note };
+    let sessions = JSON.parse(localStorage.getItem('unite_sessions')) || [];
+    sessions.push(sessionData);
+    localStorage.setItem('unite_sessions', JSON.stringify(sessions));
 
     document.getElementById('sesCase').value = '';
     document.getElementById('sesDate').value = '';
     document.getElementById('sesNote').value = '';
+
+    renderSessions();
 }
 
-// إضافة قضية
-function addCase() {
-    let no = document.getElementById('cNo').value;
-    let client = document.getElementById('cClient').value;
-    let opp = document.getElementById('cOpp').value;
-    let court = document.getElementById('cCourt').value;
+function renderSessions() {
+    const tbody = document.getElementById('sessionsTable');
+    if (!tbody) return;
+    const sessions = JSON.parse(localStorage.getItem('unite_sessions')) || [];
 
-    if (!no || !client) {
-        alert('أدخل رقم القضية والموكل!');
+    tbody.innerHTML = sessions.map((s, index) => `
+        <tr>
+            <td>${s.caseName}</td>
+            <td>${s.date}</td>
+            <td>${s.note || '-'}</td>
+            <td>
+                <button style="background:#e74c3c; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;" onclick="deleteSession(${index})">
+                    <i class="fa-solid fa-trash"></i> حذف
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function deleteSession(index) {
+    let sessions = JSON.parse(localStorage.getItem('unite_sessions')) || [];
+    sessions.splice(index, 1);
+    localStorage.setItem('unite_sessions', JSON.stringify(sessions));
+    renderSessions();
+}
+
+// ==========================================
+// 5. إدارة القضايا (Cases)
+// ==========================================
+function addCase() {
+    const caseNo = document.getElementById('cNo').value.trim();
+    const client = document.getElementById('cClient').value.trim();
+    const opponent = document.getElementById('cOpp').value.trim();
+    const court = document.getElementById('cCourt').value.trim();
+
+    if (!caseNo || !client) {
+        alert('برجاء إدخال رقم القضية واسم الموكل!');
         return;
     }
 
-    let tr = document.createElement('tr');
-    tr.innerHTML = `<td>${no}</td><td>${client}</td><td>${opp || '-'}</td><td>${court || '-'}</td>`;
-    document.getElementById('casesTable').appendChild(tr);
+    const caseData = { id: Date.now(), caseNo, client, opponent, court };
+    let cases = JSON.parse(localStorage.getItem('unite_cases')) || [];
+    cases.push(caseData);
+    localStorage.setItem('unite_cases', JSON.stringify(cases));
 
     document.getElementById('cNo').value = '';
     document.getElementById('cClient').value = '';
     document.getElementById('cOpp').value = '';
     document.getElementById('cCourt').value = '';
-}function saveData(section) {
-    let newItem = { id: Date.now() };
-    let storageKey = '';
-    let formId = '';
 
-    if (section === 'clients') {
-        // استخدام الأسماء الصحيحة للـ ID من كود الـ HTML الخاص بك
-        const nameInput = document.getElementById('cliName');
-        const phoneInput = document.getElementById('cliPhone');
-        const nationalIdInput = document.getElementById('cliNationalId');
+    renderCases();
+}
 
-        if (!nameInput || !nameInput.value.trim()) {
-            return alert('يرجى إدخال اسم الموكل!');
-        }
+function renderCases() {
+    const tbody = document.getElementById('casesTable');
+    if (!tbody) return;
+    const cases = JSON.parse(localStorage.getItem('unite_cases')) || [];
 
-        newItem.name = nameInput.value.trim();
-        newItem.phone = phoneInput ? phoneInput.value.trim() : '';
-        newItem.nationalId = nationalIdInput ? nationalIdInput.value.trim() : '';
-        
-        storageKey = 'unite_clients';
+    tbody.innerHTML = cases.map((c, index) => `
+        <tr>
+            <td>${c.caseNo}</td>
+            <td>${c.client}</td>
+            <td>${c.opponent || '-'}</td>
+            <td>${c.court || '-'}</td>
+        </tr>
+    `).join('');
+}
 
-    } else if (section === 'expenses') {
-        // بنفس الطريقة لباقي الأقسام
-        const title = document.getElementById('expenseTitle')?.value.trim();
-        const amount = document.getElementById('expenseAmount')?.value.trim();
-        if (!title || !amount) return alert('يرجى إدخال بيان المبلغ والمصروف!');
-
-        newItem.title = title;
-        newItem.amount = amount;
-        storageKey = 'unite_expenses';
-
-    } else if (section === 'sessions') {
-        const caseNum = document.getElementById('sessionCaseNumber')?.value.trim();
-        if (!caseNum) return alert('يرجى إدخال رقم القضية للجلسة!');
-
-        newItem.caseNum = caseNum;
-        storageKey = 'unite_sessions';
-
-    } else if (section === 'cases') {
-        const caseNumber = document.getElementById('caseNumber')?.value.trim();
-        if (!caseNumber) return alert('يرجى إدخال رقم القضية!');
-
-        newItem.caseNumber = caseNumber;
-        storageKey = 'unite_cases';
-    }
-
-    // حفظ في LocalStorage
-    let list = JSON.parse(localStorage.getItem(storageKey)) || [];
-    list.push(newItem);
-    localStorage.setItem(storageKey, JSON.stringify(list));
-
-    alert('تم الحفظ بنجاح!');
-    renderAllSections();
-}// تشغيل عرض البيانات فور فتح الصفحة
+// ==========================================
+// 6. تشغيل استرجاع البيانات تلقائياً فور فتح الصفحة
+// ==========================================
 document.addEventListener('DOMContentLoaded', function() {
     renderClients();
-    // أو لو عامل دالة عامة بتعرض كل الأقسام:
-    // renderAllSections();
+    renderExpenses();
+    renderSessions();
+    renderCases();
 });
